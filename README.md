@@ -1,13 +1,16 @@
 
 # Volume visualization below FFT
 
+
+[mirandamoss.com/gallusgallusroboticus](https://mirandamoss.com/gallusgallusroboticus)
+
 ## Based on Realtime_PyAudio_FFT by Xander Steenbrugge https://github.com/aiXander/Realtime_PyAudio_FFT 
 
 MIT License
 
 
 
-
+(From original)
 
 
 
