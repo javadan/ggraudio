@@ -2,10 +2,22 @@ import numpy as np
 import pyaudio
 import time, sys, math
 from collections import deque
+import wave
+from datetime import datetime
 
 from src.utils import *
 
 class Stream_Reader:
+
+    #GGR stuff: record audio too
+
+    def _prepare_file(self, filename, mode='wb'):
+        wavefile = wave.open(filename, mode)
+        wavefile.setnchannels(self.channels)
+        wavefile.setsampwidth(self.pa.get_sample_size(pyaudio.paInt16))
+        wavefile.setframerate(self.rate)
+        return wavefile
+
     """
     The Stream_Reader continuously reads data from a selected sound source using PyAudio
 
@@ -32,11 +44,24 @@ class Stream_Reader:
         self.update_window_n_frames = 1024 #Don't remove this, needed for device testing!
         self.data_buffer = None
 
+
         self.device = device
         if self.device is None:
             self.device = self.input_device()
         if self.rate is None:
             self.rate = self.valid_low_rate(self.device)
+
+        #GGR stuff: want to record too.
+        self.channels = 1
+        self.frames = []
+        fname = ''.join(['/home/chicken/Realtime_PyAudio_FFT/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.wav'])
+        self.wavefile = self._prepare_file(fname)
+        self.save_when_count_hits = 30000
+        self.ready_to_save = False
+        self.num_data_captures = 0
+
+
+
 
         self.update_window_n_frames = round_up_to_even(self.rate / updates_per_second)
         self.updates_per_second = self.rate / self.update_window_n_frames
@@ -45,8 +70,7 @@ class Stream_Reader:
         self.new_data = False
         if self.verbose:
             self.data_capture_delays = deque(maxlen=20)
-            self.num_data_captures = 0
-
+            
         self.stream = self.pa.open(
             input_device_index=self.device,
             format = pyaudio.paInt16,
@@ -67,13 +91,24 @@ class Stream_Reader:
         if self.verbose:
             start = time.time()
 
+
+        from_buf = np.frombuffer(in_data, dtype=np.int16)
+
+
         if self.data_buffer is not None:
-            self.data_buffer.append_data(np.frombuffer(in_data, dtype=np.int16))
+            self.data_buffer.append_data(from_buf)
             self.new_data = True
 
+        self.num_data_captures += 1
+            
         if self.verbose:
-            self.num_data_captures += 1
             self.data_capture_delays.append(time.time() - start)
+
+
+        self.frames.append(in_data)
+        if self.num_data_captures % self.save_when_count_hits == 0:
+            self.ready_to_save = True
+
 
         return in_data, pyaudio.paContinue
 

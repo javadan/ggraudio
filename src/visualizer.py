@@ -29,7 +29,7 @@ class Spectrum_Visualizer:
 
         self.toggle_history_mode()
 
-        self.add_slow_bars = 1
+        self.add_slow_bars = 0
         self.add_fast_bars = 1
         self.slow_bar_thickness = max(0.00002*self.HEIGHT, 1.25 / self.ear.n_frequency_bins)
         self.tag_every_n_bins = max(1,round(5 * (self.ear.n_frequency_bins / 51))) # Occasionally display Hz tags on the x-axis
@@ -235,6 +235,8 @@ class Spectrum_Visualizer:
             pygame.draw.line(self.overlay_volume_graph, (255,255,255), (x, self.HEIGHT), (x, y), 3)
             pygame.draw.line(self.overlay_volume_graph, (0,0,0), (x+1, self.HEIGHT), (x, y), 3)
             
+#            self.overlay_volume_graph.set_at((self.WIDTH - len(self.totals) + i, self.HEIGHT - int(total)), (255,255,255))
+#            self.overlay_volume_graph.set_at((self.WIDTH - len(self.totals) + i + 1, self.HEIGHT - int(total)), (0,0,0))
         
         self.screen.blit(self.overlay_volume_graph, (0, self.HEIGHT))
 

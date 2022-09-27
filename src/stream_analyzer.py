@@ -3,8 +3,11 @@ import time, math, scipy
 from collections import deque
 from scipy.signal import savgol_filter
 
-from src.fft import getFFT
+from src.fft2 import getFFT
 from src.utils import *
+import wave
+from datetime import datetime
+
 
 class Stream_Analyzer:
     """
@@ -58,7 +61,7 @@ class Stream_Analyzer:
 
         #Custom settings:
         self.rolling_stats_window_s    = 20     # The axis range of the FFT features will adapt dynamically using a window of N seconds
-        self.equalizer_strength        = 0 #.20   # [0-1] --> gradually rescales all FFT features to have the same mean
+        self.equalizer_strength        = 0.20   # [0-1] --> gradually rescales all FFT features to have the same mean
         self.apply_frequency_smoothing = False   # Apply a postprocessing smoothing filter over the FFT outputs
         
         #^ GGR change - prefer accuracy over smoother curves
@@ -130,6 +133,7 @@ class Stream_Analyzer:
 
         latest_data_window = self.stream_reader.data_buffer.get_most_recent(self.FFT_window_size)
 
+        
         self.fft = getFFT(latest_data_window, self.rate, self.FFT_window_size, log_scale = self.log_features)
         #Equalize pink noise spectrum falloff:
         self.fft = self.fft * self.power_normalization_coefficients
@@ -149,7 +153,6 @@ class Stream_Analyzer:
         for bin_index in range(self.n_frequency_bins):
             self.frequency_bin_energies[bin_index] = np.mean(self.fft[self.fftx_indices_per_bin[bin_index]])
             
-            
 
         #Beat detection ToDo:
         #https://www.parallelcube.com/2018/03/30/beat-detection-algorithm/
@@ -159,6 +162,16 @@ class Stream_Analyzer:
         return
 
     def get_audio_features(self):
+
+        if self.stream_reader.ready_to_save:
+            print("Saving audio clip")
+            self.stream_reader.wavefile.writeframes(b''.join(self.stream_reader.frames))
+            self.stream_reader.wavefile.close()
+            fname = ''.join(['/home/chicken/Realtime_PyAudio_FFT/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.wav'])
+            self.stream_reader.wavefile = self.stream_reader._prepare_file(fname)
+            self.stream_reader.frames = []
+            self.stream_reader.ready_to_save = False
+
 
         if self.stream_reader.new_data:  #Check if the stream_reader has new audio data we need to process
             if self.verbose:
