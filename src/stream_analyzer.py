@@ -167,11 +167,13 @@ class Stream_Analyzer:
             print("Saving audio clip")
             self.stream_reader.wavefile.writeframes(b''.join(self.stream_reader.frames))
             self.stream_reader.wavefile.close()
-            fname = ''.join(['/home/chicken/Realtime_PyAudio_FFT/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.wav'])
+            fname = ''.join(['/home/chicken/chicken_data/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.wav'])
             self.stream_reader.wavefile = self.stream_reader._prepare_file(fname)
             self.stream_reader.frames = []
             self.stream_reader.ready_to_save = False
 
+            if self.visualize and self.visualizer._is_running:
+                self.visualizer.draw_time_cutoff()
 
         if self.stream_reader.new_data:  #Check if the stream_reader has new audio data we need to process
             if self.verbose:

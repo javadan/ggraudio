@@ -24,6 +24,8 @@ class Stream_Reader:
         FFT_window_size = None,
         verbose = False):
 
+
+
         print("Available audio devices:")
         device_dict = sd.query_devices()
         print(device_dict)

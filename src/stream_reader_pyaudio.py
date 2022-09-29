@@ -56,7 +56,7 @@ class Stream_Reader:
         self.frames = []
         fname = ''.join(['/home/chicken/Realtime_PyAudio_FFT/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.wav'])
         self.wavefile = self._prepare_file(fname)
-        self.save_when_count_hits = 30000
+        self.save_when_count_hits = 53500
         self.ready_to_save = False
         self.num_data_captures = 0
 

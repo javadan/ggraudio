@@ -1,6 +1,7 @@
 import numpy as np
 import time, sys, math
 import pygame
+from datetime import datetime
 from collections import deque
 from src.utils import Button
 from matplotlib import cm
@@ -49,6 +50,7 @@ class Spectrum_Visualizer:
         self.totals = deque(maxlen=self.WIDTH)
         self.EXTRA_HEIGHT_FOR_TOTALS_GRAPH = self.HEIGHT * 2
         self.overlay_volume_graph = pygame.Surface((self.WIDTH, self.HEIGHT))
+        self.counter_since_clip_save = 0
         
         #400 frequency bins, we're interested in this range
         self.chicken_low_freq = 1950
@@ -132,6 +134,7 @@ class Spectrum_Visualizer:
                     self.upper_bin = i
                     self.bin_lines.append((x, y))
                     
+        self.counter_since_clip_save = 0
                 
         self._is_running = True
 
@@ -220,8 +223,40 @@ class Spectrum_Visualizer:
         
         pygame.display.flip()
 
+
+    #for seeing clips
+    def draw_time_cutoff(self):
+        print("Drawing")
+
+        #print(self.overlay_volume_graph.get_width)
+        #print(self.overlay_volume_graph.get_height)
+
+        print(self.overlay_volume_graph.get_rect())
+
+#        w0 = 0
+#        w1 = self.WIDTH
+#        h0 = self.HEIGHT/2
+#        h1 = 8*self.HEIGHT/10 
+
+        w0 = 0
+        h0 = 350
+        w1 = 1200
+        h1 = 100
+        print(w0, " ", h0 , " ", w1, " ", h1)
+
+        sub = self.overlay_volume_graph.subsurface((w0,h0,w1,h1)).copy()
+
+                
+       
+        fname = ''.join(['/home/chicken/chicken_data/clip-', datetime.utcnow().strftime('%Y%m%d%H%M%S'), '.png'])
+        pygame.image.save(sub, fname)
+        print("Saved ", fname)
+                
+
     def plot_volume_graph(self):
+            
         
+        self.counter_since_clip_save += 1
         #from 1950:5200 Hz or whatever
         chicken_range = self.frequency_bin_energies[self.lower_bin:self.upper_bin]
 
